@@ -1,0 +1,16 @@
+# Remove the question mark from the request but maintain the query string
+RewriteEngine On
+
+# Uncomment the following line if your public folder isn't the web server's root
+# RewriteBase /
+
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "http://localhost:8080"
+    Header set Access-Control-Allow-Headers "X-Requested-With, Content-Type, Accept, Origin, Authorization"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+</IfModule>
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteRule ^(.*)$ index.php?$1 [L,QSA]

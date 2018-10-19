@@ -1,0 +1,12 @@
+{
+    "require": {
+        "twig/twig": "~2.0",
+        "firebase/php-jwt": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+             "Core\\": "Core/",
+             "App\\": "App/"
+        }
+    }
+}
