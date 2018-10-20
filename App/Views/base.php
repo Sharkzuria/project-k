@@ -35,7 +35,7 @@
         <div class="col-md-3 left_col">
           <div class="left_col scroll-view">
             <div class="navbar nav_title" style="border: 0;">
-              <a href="index.html" class="site_title"><i class="fa fa-paw"></i> <span>Gentelella Alela!</span></a>
+              <a href="index.html" class="site_title"><i class="fa fa-paw"></i> <span>Project Khufu</span></a>
             </div>
 
             <div class="clearfix"></div>
@@ -47,7 +47,7 @@
               </div>
               <div class="profile_info">
                 <span>Welcome,</span>
-                <h2>John Doe</h2>
+                <h2>{{ user['fname'] }}</h2>
               </div>
             </div>
             <!-- /menu profile quick info -->
@@ -71,6 +71,7 @@
 
     <!-- jQuery -->
     <script src="{{baseurl}}vendors/jquery/dist/jquery.min.js"></script>
+    <script src="{{baseurl}}js/jquery-1.11.1.min.js"></script>
     <!-- Bootstrap -->
     <script src="{{baseurl}}vendors/bootstrap/dist/js/bootstrap.min.js"></script>
     <!-- FastClick -->
@@ -109,5 +110,31 @@
 
     <!-- Custom Theme Scripts -->
     <script src="{{baseurl}}build/js/custom.min.js"></script>
+        <!-- //for index page weekly sales java script -->
+	<div id="snackbar">{{ message }}</div> 
+        <!-- //header-ends -->
+
+	<script type="">
+
+	    $(document).ready(function (){
+
+	        if("{{ message }}" != ""){
+	            var x = document.getElementById("snackbar")
+
+	            if("{{ class }}" != ""){
+	                x.style.backgroundColor = '#66cc66';
+	            }
+
+	            
+
+	            // Add the "show" class to DIV
+	            x.className = "show";
+
+	            // After 3 seconds, remove the show class from DIV
+	            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 7000);
+	        }
+	    });
+
+	</script>
 </body>
 </html>

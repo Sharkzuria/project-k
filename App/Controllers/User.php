@@ -18,7 +18,8 @@ class User extends \Core\Controller
 
     function __construct(){
 
-        $this->uModel = new UserModel();
+            $this->uModel = new UserModel();
+
     }
 
     public function userDash(){
@@ -26,139 +27,93 @@ class User extends \Core\Controller
         // $data = json_decode($data, false);
         // $id = $data->id;
         if(!isset($_SESSION['user']['userId'])){
-            redirect('/user/login');
+
+            View::renderTemplate('login.php');
+
         }else{
-             $id = 1;
+             $id = $_SESSION['user']['userId'];
 
             $userData['user'] = $this->uModel->get_user($id);
-            $userData['lease'] = $this->uModel->get_leases($id);
-
+            $lease = $this->uModel->get_leases($id);
+            $userData['lease'] = $lease[0];
+            // print_r($userData); exit;
             View::renderTemplate('Home/index.php', $userData);
         }
        
     }
 
 
-    /**
-     * Show the index page
-     *
-     * @return void
-     */
-    public function registerAction()
-    {
-        if($_SERVER['REQUEST_METHOD'] == "POST"){
-            $user = $this->uModel->register($_POST);
 
-            if(!$user['error']){
+    public function addBankAccount(){
 
-                $_SESSION['user'] = [
-                            'userId' => $user[0],
-                            'fname' => $user[1],
-                            'lname' => $user[2],
-                            'email' => $user[3],
-                            'phone' => $user[4],
-                        ];
+        if(!isset($_SESSION['user']['userId'])){
 
-                redirect('/user/dashboard');
-            }else{
-                echo "error";
+            View::renderTemplate('login.php');
+
+        }else{
+            if($_SERVER['REQUEST_METHOD'] == "GET"){
+                $id = $_SESSION['user']['userId'];
+
+                $template['message'] = (isset($_SESSION['message']))? $_SESSION['message']: "";
+                $template['class'] = (isset($_SESSION['class']))? $_SESSION['class'] : "" ;
+                $template['user'] = $this->uModel->get_user($id);
+
+                View::renderTemplate('User/add-account.php', $template);
+                $_SESSION['message'] = "";
+
+            }else if($_SERVER['REQUEST_METHOD'] == "POST"){
+
+                $result = $this->uModel->addBankAcc($_POST);
+                if(!$result['error']){
+
+                    $_SESSION['message'] = 'Success!!';
+                    $_SESSION['class'] = 'Success';
+                    redirect('/user/add-bank-account');
+
+                }else{
+                    $_SESSION['message'] = $result['message'];
+                    redirect('/user/add-bank-account');
+                }
             }
         }
     }
 
-    /**
-     * Show the index page
-     *
-     * @return void
-     */
-    public function loginAction()
-    {
-        if($_SERVER['REQUEST_METHOD'] == "GET"){
+    public function userPayments(){
 
-            if(isset($_SESSION['user']['userId'])){
-                redirect('/user/dashboard');
-            }{
+            if(!isset($_SESSION['user']['userId'])){
+
                 View::renderTemplate('login.php');
-            }
-           
 
-        }else if($_SERVER['REQUEST_METHOD'] == "POST"){
-
-            /* $email = "";
-            $password = "";
-            $login_data = trim(file_get_contents('php://input'));
-            $login_data = json_decode($login_data, false);
-            if(is_object($login_data)){
-                $email = $login_data->email;
-                $password = $login_data->password;
             }else{
-                echo json_encode(['status' => 403]);
-            }*/
-            // print_r($login_data->email);
-            // $login_data = get_object_vars($login_data);
-            $user = '';
-            if(isset($_POST['email']) && isset($_POST['password'])){
 
-                $user = $this->uModel->login($_POST['email'], $_POST['password']);
-                if(!$user['error']){
+                $id = $_SESSION['user']['userId'];
 
-                print_r($user);
-                /*$tokenId = base64_encode(openssl_random_pseudo_bytes(32));
-                $issuedAt = time();
-                $notBefore = $issuedAt + 10;
-                $expire = $notBefore + 60;
-                $serverName = Config::JWT_INFO['serverName'];
-                
-                $data = [
-                        // 'iat' => $issuedAt,
-                        'jti' => $tokenId,
-                        // 'iss' => $serverName,
-                        // 'nbf' => $notBefore,
-                        // 'exp' => $expire,
-                        'data' => [
-                            'userId' => $user[0],
-                            'fname' => $user[1],
-                            'lname' => $user[2],
-                            'email' => $user[3],
-                            'phone' => $user[4],
-                        ]
-                    ];
-
-                $secretKey = base64_encode(Config::JWT_INFO['jwt']['key']);
-                $algorithm = Config::JWT_INFO['jwt']['algorithm'];
-                $jwt = JWT::encode($data, $secretKey, $algorithm);
-
-                $unencodedArr = ['jwt' => $jwt, 'status' => 201];*/
-
-                // echo json_encode(['status' => 201]);
-
-                /*echo json_encode($unencodedArr);*/
-                $_SESSION['user'] = [
-                            'userId' => $user[0],
-                            'fname' => $user[1],
-                            'lname' => $user[2],
-                            'email' => $user[3],
-                            'phone' => $user[4],
-                        ];
-                redirect('/user/dashboard');
-            } else {
-
-                echo json_encode(['status' => 403]);
+                $userData['user'] = $this->uModel->get_user($id);
+                $userData['payments'] = $this->uModel->get_payments($id);
+                // print_r($userData); exit();
+                View::renderTemplate('User/view-my-payments.php', $userData);
             }
-            }
-        }
-       
+    
+
     }
 
 
     public function seed(){
         $typeM = [0, 1, 2, 3, 4];
         $typeB = [5, 2, 3, 4, 5];
-        $id = 1;
+        $id = null;
         // $transction_type = $_POST['tr_type'];
         $transction_type = 'bank_records';
 
         $type = $typeM[0];
+
+        if($transction_type == 'bank_records'){
+            $bank_id = $_POST['bank_id'];
+            $id = $_POST['id'];
+        }else if($transction_type == 'mpesa_records'){
+            // $bank_id = $_POST['phone_no'];
+            $id = $_POST['id'];
+        }
 
         //get range for number of records
         $range = rand(rand(20, 70), rand(70, 130));
@@ -270,9 +225,4 @@ class User extends \Core\Controller
         return date($sFormat, $fVal);
     }
 
-    public function logout(){
-       unset($_SESSION['user']);
-
-       redirect('/user/login');
-    }
 }

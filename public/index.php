@@ -33,13 +33,24 @@ $router = new Core\Router();
 
 
 // Add the routes
-$router->add('', ['controller' => 'User', 'action' => 'userDash']);
-$router->add('/user/login', ['controller' => 'User', 'action' => 'login']);
-$router->add('/user/register', ['controller' => 'User', 'action' => 'login']);
-$router->add('logout', ['controller' => 'User', 'action' => 'logout']);
+$router->add('', ['controller' => 'Home', 'action' => 'userDash']);
+$router->add('user/login', ['controller' => 'Home', 'action' => 'login']);
+$router->add('user/register', ['controller' => 'Home', 'action' => 'register']);
+$router->add('logout', ['controller' => 'Home', 'action' => 'logout']);
 $router->add('user/dashboard', ['controller' => 'User', 'action' => 'userDash']);
 $router->add('seed', ['controller' => 'User', 'action' => 'seed']);
 $router->add('user/expense-and-income', ['controller' => 'User', 'action' => 'getUserFinance']);
+$router->add('user/payments', ['controller' => 'User', 'action' => 'userPayments']);
+
+//user
+$router->add('/user/add-bank-account', ['controller' => 'User', 'action' => 'addBankAcc']);
+
+//ADMIN
+$router->add('admin/login', ['controller' => 'Admin', 'action' => 'login']);
+$router->add('admin/dashboard', ['controller' => 'Admin', 'action' => 'adminDash']);
+$router->add('admin/view-payments', ['controller' => 'Admin', 'action' => 'allPayments']);
+$router->add('admin/view-users', ['controller' => 'Admin', 'action' => 'allUsers']);
+
 
 // Audit routes
 $router->add('user/confirmation', ['controller' => 'Audit', 'action' => 'confirmUser']);

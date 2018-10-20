@@ -102,9 +102,63 @@ class UserModel extends \Core\Model
         
     }
 
-    public function add_payment_record($table, $amount, $bal_before, $id, $fname, $lname){
+    public function addBankAcc($data){
+
+        $result['message'] = "failed";
+
+        if(sizeof($this->myBankAcc($_SESSION['user']['userId'])) > 0){
+
+            $result['message'] = "failed - Can't enter morethan one bank";
+            $result['error'] = true;
+
+            return $result;
+        }
+
+        $stmt = $this->db->prepare("INSERT INTO bank_accounts (userid, bank, acc_number) VALUES (:userid, :bank, :acc_number)");
+        $stmt->bindValue(':userid', $_SESSION['user']['userId']);
+        $stmt->bindValue(':bank', $data['bank']);
+        $stmt->bindValue(':acc_number', $data['acc_number']);
+
+        if($stmt->execute()){
+            $result['message'] = "Success";
+            $result['error'] = false;
+
+            return $result;
+        }else{
+            $result['message'] = "failed - Can't enter morethan one bank";
+            $result['error'] = true;
+
+            return $result;
+        }
+    }
+
+    public function myBankAcc($id){
+
+        $stmt = $this->db->prepare("SELECT * FROM bank_accounts WHERE userid = :id");
+        $stmt->bindValue(':id', $id);
+
+        if($stmt->execute()){
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }else{
+            return false;
+        }
+
+    }
+
+    public function add_payment_record($table, $amount, $bal_before, $id, $fname, $lname, $bank_id = null){
+
+        $stmt = "";
+
+        if($table == 'bank_records'){
+
+            $stmt = $this->db->prepare("INSERT INTO $table (fname, lname, transaction_code, amt_transacted, bal_before, bal_after, bank_id, date_time, id) VALUES (:fname, :lname, :transaction_code, :amt_transacted, :bal_before, :bal_after, :bank_id, :date_time, :id)");
+            $stmt->bindValue(':bank_id', $bank_id);
+
+        }else{
+            $stmt = $this->db->prepare("INSERT INTO $table (fname, lname, transaction_code, amt_transacted, bal_before, bal_after, date_time, id) VALUES (:fname, :lname, :transaction_code, :amt_transacted, :bal_before, :bal_after, :date_time, :id)");
+        }
         
-        $stmt = $this->db->prepare("INSERT INTO $table (fname, lname, transaction_code, amt_transacted, bal_before, bal_after, date_time, id) VALUES (:fname, :lname, :transaction_code, :amt_transacted, :bal_before, :bal_after, :date_time, :id)");
+        
         $stmt->bindValue(':fname', $fname);
         $stmt->bindValue(':lname', $lname);        
         $bytes = random_bytes(4);      
@@ -200,6 +254,30 @@ class UserModel extends \Core\Model
         // echo "<pre>" . print_r($result, true) ."<\pre>";
         return $result;
 
+    }
+
+    public function get_payments($id){/*
+
+        if($id === ""){
+            $stmt = $this->db->query("SELECT lease_payments.bal_before, lease_payments.amount, lease_payments.bal_after, lease_payments.method, lease_payments.date, users.fname FROM lease_payments LEFT JOIN users ON users.id = lease_payments.user_id");
+
+            if($stmt->execute()){
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }else{
+                return false;
+            }
+        }else{*/
+
+            $stmt = $this->db->prepare("SELECT lease_payments.bal_before, lease_payments.amount, lease_payments.bal_after, lease_payments.method, lease_payments.date, users.fname FROM lease_payments LEFT JOIN users ON users.id = lease_payments.user_id WHERE lease_payments.user_id = :id");
+            $stmt->bindValue(":id", $id);
+
+            if($stmt->execute()){
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }else{
+                return false;
+            }
+        /*}*/
+        
     }
 
     public function get_user($id){

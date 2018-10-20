@@ -15,17 +15,16 @@
 	{% endif %}
 
 	{% set percent_paid = (bal/cost) * 100 %}
-
-           <!-- page content -->
+	  <!-- page content -->
         <div class="right_col" role="main">
           <!-- top tiles -->
           <div class="row tile_count">
-            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <div class="col-md-4 col-sm-4 col-xs-6 tile_stats_count">
               <span class="count_top"><i class="fa fa-home"></i> Home Cost</span>
               <div class="count">{{ lease['cost'] }}</div>
               <span class="count_bottom"> KSH</span>
             </div>
-            <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+            <div class="col-md-4 col-sm-4 col-xs-6 tile_stats_count">
               <span class="count_top"><i class="fa fa-clock-o"></i> Balance</span>
               <div class="count red">{{ lease['balance'] }}</div>
               <div class="">
@@ -34,18 +33,14 @@
                     </div>
                   </div>
             </div>
-            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+            <!--<div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
               <span class="count_top"><i class="fa fa-user"></i> Tax</span>
               <div class="count green"> {{ lease['tax_charge'] }}%</div>
-            </div>
-            <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
-              <span class="count_top"><i class="fa fa-user"></i> Total Amount Paid</span>
-              <div class="count">{{ lease['cost'] + lease['balance'] }}</div>
-              <span class="count_bottom"> KSH</span>
-            </div>
+            </div> -->
             <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
-              <span class="count_top"><i class="fa fa-user"></i>House Location</span>
-              <div class="count">{{ lease['location'] }}</div>
+              <span class="count_top"><i class="fa fa-user"></i> Total Amount Paid</span>
+              <div class="count">{% if lease['balance'] == "" %} 0.0 {% else %} {{ lease['cost'] + lease['balance'] }} {% endif %}</div>
+              <span class="count_bottom"> KSH</span>
             </div>
           </div>
           <!-- /top tiles -->
@@ -699,5 +694,4 @@
           </div>
         </div>
         <!-- /page content -->
-
 {% endblock %}

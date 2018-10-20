@@ -3,49 +3,79 @@
 namespace App\Controllers;
 
 use \Core\View;
-use App\Models\UserModel;
+use App\Models\AdminModel;
 
 /**
  * Home controller
  *
  * PHP version 7.0
  */
-class Home extends \Core\Controller
+class Admin extends \Core\Controller
 {
 
-	private $uModel;
+    private $aModel;
 
     function __construct(){
 
-        $this->uModel = new UserModel();
+        $this->aModel = new AdminModel();
     }
 
-    /**
-     * Show the index page
-     *
-     * @return void
-     */
-    public function registerAction()
-    {
-        if($_SERVER['REQUEST_METHOD'] == "POST"){
-            $user = $this->uModel->register($_POST);
 
-            if(!$user['error']){
+    public function adminDash(){
+        // $data = trim(file_get_contents('php://input'));
+        // $data = json_decode($data, false);
+        // $id = $data->id;
+        if(!isset($_SESSION['user']['userId']) || !isset($_SESSION['user']['level']) || $_SESSION['user']['level'] < 5){
 
-                $_SESSION['user'] = [
-                            'userId' => $user[0],
-                            'fname' => $user[1],
-                            'lname' => $user[2],
-                            'email' => $user[3],
-                            'phone' => $user[4],
-                        ];
+            redirect('/admin/login');
 
-                redirect('/user/dashboard');
-            }else{
-                echo "error";
-            }
+        }else{
+             $id = $_SESSION['user']['userId'];
+
+            $userData['user'] = $this->aModel->get_admin($id);
+            $lease = $this->aModel->get_all_leases();
+            $userData['lease'] = $lease[0];
+            // print_r($userData); exit;
+            View::renderTemplate('Admin/admin-dash.php', $userData);
+        }
+       
+    }
+
+    public function allPayments(){
+
+         if(!isset($_SESSION['user']['userId']) || !isset($_SESSION['user']['level']) || $_SESSION['user']['level'] < 5){
+
+            redirect('/admin/login');
+
+        }else{
+             $id = $_SESSION['user']['userId'];
+
+            $userData['user'] = $this->aModel->get_admin($id);
+            $userData['payments'] = $this->aModel->get_payments("");
+
+            // print_r($userData); exit;
+            View::renderTemplate('Admin/view-payments.php', $userData);
         }
     }
+
+    public function allUsers(){
+
+         if(!isset($_SESSION['user']['userId']) || !isset($_SESSION['user']['level']) || $_SESSION['user']['level'] < 5){
+
+            redirect('/admin/login');
+
+        }else{
+             $id = $_SESSION['user']['userId'];
+
+            $userData['user'] = $this->aModel->get_admin($id);
+            $userData['payments'] = $this->aModel->get_users("");
+
+            // print_r($userData); exit;
+            View::renderTemplate('Admin/view-users.php', $userData);
+        }
+    }
+
+
 
     /**
      * Show the index page
@@ -57,9 +87,9 @@ class Home extends \Core\Controller
         if($_SERVER['REQUEST_METHOD'] == "GET"){
 
             if(isset($_SESSION['user']['userId'])){
-                redirect('/user/dashboard');
-            }{
-                View::renderTemplate('login.php');
+                redirect('/admin/dashboard');
+            }else{
+                View::renderTemplate('Admin/login.php');
             }
            
 
@@ -80,10 +110,8 @@ class Home extends \Core\Controller
             $user = '';
             if(isset($_POST['email']) && isset($_POST['password'])){
 
-                $user = $this->uModel->login($_POST['email'], $_POST['password']);
+                $user = $this->aModel->login($_POST['email'], $_POST['password']);
                 if(!$user['error']){
-
-                print_r($user);
                 /*$tokenId = base64_encode(openssl_random_pseudo_bytes(32));
                 $issuedAt = time();
                 $notBefore = $issuedAt + 10;
@@ -117,14 +145,13 @@ class Home extends \Core\Controller
                 $_SESSION['user'] = [
                             'userId' => $user[0],
                             'fname' => $user[1],
-                            'lname' => $user[2],
-                            'email' => $user[3],
-                            'phone' => $user[4],
+                            'email' => $user[2],
+                            'level' => $user[3],
                         ];
                 if(isset($_SERVER['HTTP_REFERER'])){
-                	redirect($_SERVER['HTTP_REFERER']);
+                    redirect($_SERVER['HTTP_REFERER']);
                 }else{
-                	redirect('/user/dashboard');
+                    redirect('/admin/dashboard');
                 }
                 
             } else {
@@ -136,9 +163,4 @@ class Home extends \Core\Controller
        
     }
 
-	public function logout(){
-       unset($_SESSION['user']);
-
-       redirect('/user/login');
-    }
 }
